@@ -1,0 +1,13 @@
+<h1>Register your Reddit Account and Wallet</h1>
+
+<p>Welcome to NFTGate version 0.1! This page will map your reddit username to whichever ethereum wallet address you connect below. This will enable the automod to verify if you have necessary NFT key to participate in the Sub! Once you successfully connect your wallet, you will be redirected to reddit to login and consent to sharing your username. This is a temporary authorization and lasts only long enough to confirm you're who you say you are. Tokens are not stored and even if they were, only the username and signup date would be accessbile. You can view the source code for this application on github at: TBD</p>
+
+<p>If you've already connected your wallet, you can use the Disconnect Wallet button to connect a different wallet. NFTGate will check both wallets for the NFT and if any have it your username will be allowed to particpate in the sub.</p>
+
+
+<div id="connnect">
+    <input id="session" value="{{sessionId}}" type="hidden">
+    <button type="button" class="btn btn-primary" id="connectWallet" onclick="showQr();">Connect Wallet</button>
+    <button type="button" class="btn btn-primary" id="disconnectWallet" onclick="provider.disconnect();">Disconnnect Wallet</button>
+
+</div>
