@@ -14,7 +14,7 @@ var provider = new WalletConnectProvider.default({
     });
   
 
-async function showQr(params) {
+async function showQr() {
     //present the Wallet Connect QR code
     provider.enable().then(function(res){ 
         //get wallet addrs and then wrap this into the Web3 JS
@@ -22,16 +22,30 @@ async function showQr(params) {
         
         //  Get Accounts
         web3.eth.getAccounts().then(accounts => {
-            console.log("Found account ",accounts);
-            let sessionId = $('#session').val()
-            window.location.href = "/connected?sessionId="+sessionId+"&wallet="+accounts[0];
+            promptRedditLogin(accounts[0]);
         });
         //now do all the web3 stuff you want...
         //awesome web3 application goes here
     });
-    
 }
+
+async function metaMask(){
+    console.log('click');
+    ethereum.request({ method: 'eth_requestAccounts' }).then(account =>{
+        promptRedditLogin(account);
+    }
+    );
+}
+    
+async function promptRedditLogin(account) {
+    console.log("Found account ",account);
+    let sessionId = $('#session').val()
+    window.location.href = "/connected?sessionId="+sessionId+"&wallet="+account;
+}
+
 window.onload = function () {
+
+    
    
     // Subscribe to accounts change
     provider.on("accountsChanged", (accounts) => {
