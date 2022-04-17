@@ -193,5 +193,5 @@ function makeid(length) {
 
 /* SERVER */
 
-app.listen(process.env.LOCAL_PORT);
+app.listen(process.env.LOCAL_PORT||process.env.PORT);
 console.log(`Listening at https://${process.env.HOST_NAME}:${process.env.LOCAL_PORT}`)
