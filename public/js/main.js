@@ -44,8 +44,6 @@ async function promptRedditLogin(account) {
 }
 
 window.onload = function () {
-
-    
    
     // Subscribe to accounts change
     provider.on("accountsChanged", (accounts) => {
