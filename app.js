@@ -36,7 +36,7 @@ app.get('/connected', (req, res) => {
         sessionUsers[req.query.sessionId]=req.query.wallet
         console.log('Prompting reddit login');
         console.log(`Using host_name: ${process.env.HOST_NAME}`)
-        res.redirect("https://www.reddit.com/api/v1/authorize?client_id=8zqnjjuLynzVhdh7xemYGQ&response_type=code&state="+req.query.sessionId+`&redirect_uri=http://${process.env.HOST_NAME}:${process.env.PORT || 3000}/login&duration=temporary&scope=identity`)
+        res.redirect("https://www.reddit.com/api/v1/authorize?client_id=8zqnjjuLynzVhdh7xemYGQ&response_type=code&state="+req.query.sessionId+`&redirect_uri=http://${process.env.HOST_NAME}:${process.env.LOCAL_PORT || 80}/login&duration=temporary&scope=identity`)
     } else {
         console.log('Something went wrong. sending to begining...')
         res.redirect('/');
@@ -90,7 +90,7 @@ async function validateUser(authorization_code){
 
 async function getUserToken(authorization_code){
    let t = await axios.post('https://www.reddit.com/api/v1/access_token', 
-            'grant_type=authorization_code&code='+authorization_code+'&redirect_uri='+`http://${process.env.HOST_NAME}:${process.env.PORT || 3000}/lookupUserId`,
+            'grant_type=authorization_code&code='+authorization_code+'&redirect_uri='+`http://${process.env.HOST_NAME}:${process.env.LOCAL_PORT || 80}/lookupUserId`,
             {
                 auth: {
                 username: process.env.REDDIT_CLIENT,
@@ -193,5 +193,5 @@ function makeid(length) {
 
 /* SERVER */
 
-app.listen(process.env.PORT || 3000);
-console.log(`Listening at http://${process.env.HOST_NAME}:${process.env.PORT || 3000}`)
+app.listen(process.env.LOCAL_PORT || 80);
+console.log(`Listening at http://${process.env.HOST_NAME}:${process.env.LOCAL_PORT || 80}`)
