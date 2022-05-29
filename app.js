@@ -5,12 +5,22 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 import axios from 'axios';
 import pkg from 'pg/lib/index.js';
+import snoowrap from 'snoowrap'
 
 const { Client } = pkg;
 
 dotenv.config();
 initDB();
 
+const r = new snoowrap({
+    userAgent: 'devdevgoat|backend script',
+    clientId: process.env.REDDIT_CLIENT,
+    clientSecret: process.env.REDDIT_SECRET,
+    username: process.env.REDDIT_USER,
+    password: process.env.REDDIT_PASS
+  });
+
+  
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -76,8 +86,12 @@ app.get('lookupUserId',(req,res)=>{
     res.render('tmp');
 });
 
+/* Dashboard */
 
-
+app.get('/dashboard/:postid',(req,res)=>{
+    console.log(req.params.postid)
+    res.render('tmp');
+});
 
 /* USER AUTHENTICATION WITH REDDIT */
 
@@ -144,9 +158,9 @@ async function storeWallet(u,w) {
         }
       });
     c.connect();
-    console.log(`Settingn user ${u}'s wallet to ${w}`);
+    console.log(`Setting user ${u}'s wallet to ${w}`);
     let insert_sql = 'INSERT INTO public.wallets VALUES($1,$2) ON CONFLICT DO NOTHING';
-    c.query(insert_sql,[u,w], (err, res) => {
+    c.query(insert_sql,[u,w.toLowerCase()], (err, res) => {
         if (err) throw err;
         console.log(res);
         c.end();
@@ -178,7 +192,10 @@ async function initDB() {
 }
 
 /* MISC FUNCTIONS */
-
+// In order to maintain state and make sure we don't mismap users when 
+// multiple are using the app at once, we create a random id and track 
+// it between page loads (to and from reddit) to insure the user auth'd
+// is the user that started the auth. Trash the id after.
 function makeid(length) {
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -190,9 +207,10 @@ function makeid(length) {
     return result;
 }
 
-/* Reddit linker */
 
 /* SERVER */
 
 app.listen(process.env.LOCAL_PORT||process.env.PORT);
 console.log(`Listening at https://${process.env.HOST_NAME}:${process.env.LOCAL_PORT}`)
+
+r.getHot().map(post => post.title).then(console.log);

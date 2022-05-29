@@ -10,6 +10,8 @@
     "express": "^4.17.3",
     "express-handlebars": "^6.0.4",
     "pg": "^8.7.3",
+    "rereddit": "^1.0.0",
+    "snoowrap": "^1.23.0",
     "web3": "^1.7.3"
   },
   "type": "module",
@@ -17,7 +19,6 @@
   "version": "1.0.0",
   "description": "simple webapp to allow users to map their ethereum accounts to their reddit accounts",
   "main": "app.js",
-  "devDependencies": {},
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
