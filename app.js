@@ -190,6 +190,7 @@ function makeid(length) {
     return result;
 }
 
+/* Reddit linker */
 
 /* SERVER */
 
