@@ -1,2 +1,4 @@
 # notes
 
+should be able to use the loopring sdk for kicking off the transfer:
+https://loopring.github.io/loopring_sdk/js_sdk/transfer/transferNFT.html
