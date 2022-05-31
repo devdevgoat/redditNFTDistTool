@@ -1,18 +1,2 @@
 # notes
 
-design options:
-
-- v0 script 
-- v10 website user can use to distribute on their behalf
-
-
-Main workflow:
-- user creates reddit post, summonign bot !sendLoopNFTs! or somethingn, includingn from address
-- other users responnd with !0x... address 
-- bot processes commennts of posts with summononing spell 
-    - if !0x found, 
-        - store user and address 
-        - store pendinng address in pending table
-- user goes to pending page and authenticates with web3
-- page loads all pennding user trannsactionns 
-

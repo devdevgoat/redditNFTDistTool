@@ -16,11 +16,10 @@ const r = new snoowrap({
     userAgent: 'devdevgoat|backend script',
     clientId: process.env.REDDIT_CLIENT,
     clientSecret: process.env.REDDIT_SECRET,
-    username: process.env.REDDIT_USER,
-    password: process.env.REDDIT_PASS
+    refreshToken: process.env.REDDIT_REFRESH
   });
 
-  
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -64,21 +63,21 @@ app.get('/login', (req, res) => {
                 // now we have a wallet and a reddit account!
                 console.log('Woot!');
                 console.log(req.query.code);
-                validateUser(req.query.code).then(u => 
+                validateUser(req.query.code).then(u =>
                     {
                         storeWallet(u,wallet)
                         res.render('done',{user:u,wallet:wallet})
                     }
                 );
-                
+
             }
         } else {
             console.log("Hmmm, invalid session received from callback.");
         }
     }else{
         console.log('Missing state from reddit login');
-    } 
-    
+    }
+
 });
 
 app.get('lookupUserId',(req,res)=>{
@@ -88,9 +87,29 @@ app.get('lookupUserId',(req,res)=>{
 
 /* Dashboard */
 
-app.get('/dashboard/:postid',(req,res)=>{
-    console.log(req.params.postid)
-    res.render('tmp');
+app.get('/dashboard/:postid',(req,res) => {
+    var postId = req.params.postid; //4j8p6d
+    var ethRegEx = /0x[a-fA-F0-9]{40}/;
+    var data = {}
+    r.getSubmission(postId).expandReplies({limit: 125, depth: 1}).then(p=>{
+        // should make sure only the OP can load this page
+        console.log(p.author.name); // could have the user login, then check this
+        for ( var c = 0; c < p.comments.length; c++ ){
+            let address = p.comments[c].body.match(ethRegEx);
+            let user = p.comments[c].author.name;
+            // since we're loading the comments anyway, we can just scrape for eth addresses
+            if (address){
+                // console.log(user + ":" +address);
+                data[user]=address[0];
+            }
+            // otherwise, we need to lookup in the database for that user
+            // todo: lookup in db lol
+        }
+        console.log(data);
+        data.string = JSON.stringify(data)
+        res.render('tmp',{data});
+    })
+
 });
 
 /* USER AUTHENTICATION WITH REDDIT */
@@ -103,7 +122,7 @@ async function validateUser(authorization_code){
 
 
 async function getUserToken(authorization_code){
-   let t = await axios.post('https://www.reddit.com/api/v1/access_token', 
+   let t = await axios.post('https://www.reddit.com/api/v1/access_token',
             'grant_type=authorization_code&code='+authorization_code+'&redirect_uri='+`https://${process.env.HOST_NAME}/lookupUserId`,
             {
                 auth: {
@@ -115,7 +134,7 @@ async function getUserToken(authorization_code){
             if(res.status == 200){
                 console.log('First time seeing token:',res.data.access_token);
                 return res.data.access_token;
-            }   
+            }
             else {
                 console.log('Failed getting token');
                 return null;
@@ -129,12 +148,12 @@ async function getUserId(t2){
     var config = {
         method: 'get',
         url: 'https://oauth.reddit.com/api/v1/me',
-        headers: { 
-          'Authorization': `bearer ${t2}`, 
+        headers: {
+          'Authorization': `bearer ${t2}`,
           'User-Agent': 'devdevgoat|backend script'
         }
       };
-      
+
       let u = await axios(config)
       .then(function (response) {
         // console.log(JSON.stringify());
@@ -175,15 +194,15 @@ async function initDB() {
           rejectUnauthorized: false
         }
       });
-      
+
       client.connect();
-      
+
       let create_sql = `CREATE TABLE IF NOT EXISTS public.wallets (
           username varchar(150) NOT NULL,
           wallet varchar(70) NOT NULL,
           PRIMARY KEY (username,wallet)
           );`
-      
+
       client.query(create_sql, (err, res) => {
         if (err) throw err;
         console.log(res);
@@ -192,8 +211,8 @@ async function initDB() {
 }
 
 /* MISC FUNCTIONS */
-// In order to maintain state and make sure we don't mismap users when 
-// multiple are using the app at once, we create a random id and track 
+// In order to maintain state and make sure we don't mismap users when
+// multiple are using the app at once, we create a random id and track
 // it between page loads (to and from reddit) to insure the user auth'd
 // is the user that started the auth. Trash the id after.
 function makeid(length) {
@@ -201,7 +220,7 @@ function makeid(length) {
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
     for ( var i = 0; i < length; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() * 
+        result += characters.charAt(Math.floor(Math.random() *
         charactersLength));
     }
     return result;
@@ -213,4 +232,4 @@ function makeid(length) {
 app.listen(process.env.LOCAL_PORT||process.env.PORT);
 console.log(`Listening at https://${process.env.HOST_NAME}:${process.env.LOCAL_PORT}`)
 
-r.getHot().map(post => post.title).then(console.log);
+
