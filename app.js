@@ -107,7 +107,7 @@ app.get('/dashboard/:postid',(req,res) => {
         }
         console.log(data);
         data.string = JSON.stringify(data)
-        res.render('tmp',{data});
+        res.render('dashboard',{data});
     })
 
 });
