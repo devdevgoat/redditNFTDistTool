@@ -1,0 +1,41 @@
+{
+   "action": {
+      "default_icon": {
+         "128": "icons/favicon-128.png",
+         "16": "icons/favicon-16.png",
+         "32": "icons/favicon-32.png",
+         "48": "icons/favicon-48.png",
+         "64": "icons/favicon-64.png"
+      },
+      "default_popup": "index.html",
+      "default_title": "GameStop Wallet"
+   },
+   "background": {
+      "service_worker": "background/index.js"
+   },
+   "content_scripts": [ {
+      "js": [ "browser-polyfill.min.js", "contentscript/index.js" ],
+      "matches": [ "https://*/*", "http://*/*" ],
+      "run_at": "document_start"
+   } ],
+   "description": "GameStop Wallet",
+   "host_permissions": [ "\u003Call_urls>" ],
+   "icons": {
+      "128": "icons/favicon-128.png",
+      "16": "icons/favicon-16.png",
+      "32": "icons/favicon-32.png",
+      "48": "icons/favicon-48.png",
+      "64": "icons/favicon-64.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmJXo1PXWOf5bCUbMAx7gEbVX/fKZA7CwgYafZphoMgS32R6HwF0Ppof95kmpaBd5iD/1xvn3w4UZefLpgLZ4ZnJYqoujTuvlxzT03+WWKah7eMwgdSV8HLCN/V5/fcdWhj88xbqk5t3NTvRNIjP9kemDfvMgjmGlDJrclyzuNtpOsDdv4KLsV6gSUIbLfH2DpRUdwWcmE2FJxsR9ProE/TR6qW1KDcVBeItQmhxCHkCoBfIyMbNQkdNufNQ1QeShiaFl2EJg3WwpXAhSb+6fmzMTmQGPXoAUud3A/FrzZjOYmLMTcNMnT+wYpKb+7yySZOgOk0A43GxLz4QUv2arxQIDAQAB",
+   "manifest_version": 3,
+   "minimum_chrome_version": "92",
+   "name": "GameStop Wallet",
+   "permissions": [ "storage", "tabs", "activeTab" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "0.1.0",
+   "web_accessible_resources": [ {
+      "matches": [ "https://*/*", "http://*/*" ],
+      "resources": [ "inpage/index.js" ]
+   } ]
+}

@@ -2,3 +2,48 @@
 
 should be able to use the loopring sdk for kicking off the transfer:
 https://loopring.github.io/loopring_sdk/js_sdk/transfer/transferNFT.html
+
+Standard RPC Calls
+
+wallet_switchEthereumChain
+eth_getCode
+eth_getTransactionCount
+personal_ecRecover
+eth_call
+eth_sign
+personal_sign
+eth_newFilter
+eth_getLogs
+eth_newBlockFilter
+eth_newPendingTransactionFilter
+eth_getFilterChanges
+eth_signTypedData_v1
+eth_signTypedData
+eth_signTypedData_v3
+eth_signTypedData_v4
+eth_getTransactionReceipt
+eth_getTransactionByHash
+eth_sendTransaction
+eth_sendRawTransaction
+eth_gasPrice
+eth_getBlockByNumber
+eth_blockNumber
+eth_coinbase
+eth_accounts
+eth_requestAccounts
+eth_chainId
+eth_getBalance
+eth_estimateGas
+net_version
+
+
+"getGasPrice", {}
+const r = yield (0, Ro.resolveProperties)({ address: this._getAddress(e), blockTag: this._getBlockTag(t) }),
+                            n = yield this.perform("getBalance", r);
+"getTransactionCount" ^^
+getCode
+getStorageAt
+sendTransaction
+estimateGas
+alchemy_getTokenBalances params: [e.address, "DEFAULT_TOKENS"]
+alchemy_getTokenMetadata params: [t.contractAddress]

@@ -36,6 +36,16 @@ async function metaMask(){
     }
     );
 }
+
+async function gameStop(){
+    if( typeof gamestop !== 'undefined'){
+        let acct = await gamestop.request({ method: 'eth_requestAccounts' });
+        window.loopringAcct = await setupWeb3User(acct[0]);
+        console.log(window.loopringAcct);
+    } else {
+        alert('You need to install the gamestop wallet via the chrome web store.');
+    }
+}
     
 async function promptRedditLogin(account) {
     console.log("Found account ",account);
@@ -44,7 +54,7 @@ async function promptRedditLogin(account) {
 }
 
 window.onload = function () {
-   
+    // global sdk = window.Bundle;
     // Subscribe to accounts change
     provider.on("accountsChanged", (accounts) => {
         console.log(accounts);
