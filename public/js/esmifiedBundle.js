@@ -95198,6 +95198,7 @@ exports.fromGWEI = fromGWEI;
 exports.fromWEI = fromWEI;
 exports.genExchangeData = genExchangeData;
 exports.generateKeyPair = generateKeyPair;
+exports.generateKeyPair2 = generateKeyPair2;
 exports.getAccountArg = void 0;
 exports.getAmmExitEcdsaTypedData = getAmmExitEcdsaTypedData;
 exports.getAmmJoinEcdsaTypedData = getAmmJoinEcdsaTypedData;
@@ -95237,8 +95238,8 @@ exports.get_EddsaSig_NFT_Order = get_EddsaSig_NFT_Order;
 exports.get_EddsaSig_NFT_Transfer = get_EddsaSig_NFT_Transfer;
 exports.get_EddsaSig_NFT_Withdraw = get_EddsaSig_NFT_Withdraw;
 exports.get_EddsaSig_OffChainWithdraw = get_EddsaSig_OffChainWithdraw;
-exports.get_EddsaSig_Transfer = get_EddsaSig_Transfer;
 exports.get_Is_Nft_Token = get_Is_Nft_Token;
+exports.get_EddsaSig_Transfer = get_EddsaSig_Transfer;
 exports.hebao_abi = exports.hasMarket = void 0;
 exports.isContract = isContract;
 exports.isEmpty = isEmpty;
@@ -97964,6 +97965,41 @@ async function generateKeyPair({
 }) {
   const result = await personalSign(web3, address, "", keySeed, walletType, chainId, accountId, counterFactualInfo, isMobile === undefined ? IsMobile.any() : isMobile);
 
+  if (!result.error) {
+    // console.log("sig:", result.sig);
+    const seedBuff = (0, _ethereumjsUtil.sha256)(toBuffer(result.sig)); // console.log(`seedBuff.toString('hex') ${seedBuff.toString('hex')}`)
+
+    const seed = _ethers.BigNumber.from("0x" + seedBuff.toString("hex")); // console.log(`seed ${seed.toString()}`)
+
+
+    const bitIntDataItems = bnToBufWithFixedLength(seed.toString(), 32); // console.log(`bigIntData ${bitIntDataItems}`)
+
+    const keyPair = EDDSAUtil.generateKeyPair(bitIntDataItems); // console.log("keyPair", keyPair)
+
+    const formatedPx = formatEddsaKey(toHex(toBig(keyPair.publicKeyX)));
+    const formatedPy = formatEddsaKey(toHex(toBig(keyPair.publicKeyY)));
+    const sk = toHex(toBig(keyPair.secretKey));
+    return {
+      keyPair,
+      formatedPx,
+      formatedPy,
+      sk,
+      counterFactualInfo: result.counterFactualInfo
+    };
+  } else {
+    console.log("generateKeyPair personalSign error", result.error);
+    throw Error(result.error);
+  }
+}
+
+async function generateKeyPair2({
+  eth_sig
+}) {
+  //const result = await personalSign(web3, address, "", keySeed, walletType, chainId, accountId, counterFactualInfo, isMobile === undefined ? IsMobile.any() : isMobile);
+  const result = {
+    sig:eth_sig,
+    counterFactualInfo:null
+  }
   if (!result.error) {
     // console.log("sig:", result.sig);
     const seedBuff = (0, _ethereumjsUtil.sha256)(toBuffer(result.sig)); // console.log(`seedBuff.toString('hex') ${seedBuff.toString('hex')}`)
