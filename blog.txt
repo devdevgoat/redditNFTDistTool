@@ -1,0 +1,45 @@
+For the last few days I've been trying- and failing- to make a very 'simple' web app.
+
+The concept is simple: given an eth address and a layer 2 NFT (on loopring), can I provide a one click transfer button that displays the users wallet for confirmation.
+
+This comes from having been on both the sending and receiving end of give aways on the GME subs. The process is painful... well, I thought it was until I tried to fix it, which it seems is signifactly more painful.
+
+https://c.tenor.com/N-ObN93p9Q4AAAAd/lame-painful.gif
+
+Ok, spoiler, I have not succeeded in this endeavor yet... but I'm at the point where I think maybe writing it down will help, since almost nothing else has.
+
+Granted, I did come at it originally in quite a flawed, "Going around your ass to get to your elbow" kind of way. My first iteration focused heavily on binding reddit users accounts to wallet addresses. This, while somewhat useless, and reaking of web2 thinking, actually worked pretty well. I prompted the user to connect their wallet, and upon successful web3 authentication, directed them to the reddit oauth api. Upon signing in, the user account and wallet were stored in a postgres db. And yeah, thats when the alarm bells started going off haha.
+
+https://c.tenor.com/TDC-kzU-F2UAAAAC/trump-donald.gif
+
+Centralizing the mapping seemed like the only answer to the problem at first. I even wrote a whole readme justifying it [here](https://github.com/devdevgoat/redditNFTDistTool). Oh how much can change in 48 hours.
+
+But no, there's no way in hell people are going to sign up for that. Maybe if I was Gamestop, I could offer the option of binding the users reddit account to their profile (hint hint, ya'll are just using plain text entry atm?! Come on guys...), but that's ultimately not going to make the problem any better, as people will continue to post their eth addresses in the thread and wait for that delicious nft drop.
+
+So wut do?
+
+I started over and simpler. First, a simple page that takes a reddit id and scrapes all the (up to 250) first level addresses out of the comments. This is also working... web2 is so reliable and simle...
+
+image.png (desktop)
+
+But now, the hard part.
+
+See, thus far, I've built everying using Node.js. This has the handy dandy benifit of having lots of web3 plugins. Loopring SDK even has a few modules... to bad their all in typescript and seem to focus on SERVER SIDE LOGIC!!
+
+You see, I don't actually know how to program anything. I have a cursory understanding of the english language and that's about it. So for the past day or so I've been banging my head on my desk trying to figure out how I call layer 2 functions in the browser... which doesn't utilize the node.js sdk as far as I can tell.
+
+Loopring v2 seems to have had native UMD/browser based support... but when I tried browserify on the minified js bundle... there was lots of red in the console. Hell, the [only examples](https://codesandbox.io/s/react-4v50ft?file=/src/App.tsx:115-142) of browser based code provided by loopring are just simple web3 connections... which anyone can do and doesn't include [helpful functions](https://loopring.github.io/loopring_sdk/js_sdk/transfer/transferNFT.html) like EDDSA/EDCSA. The server side examples assume you, the developer- not the user- are trying to send transactions. But I want to pre-build transactions to be finalized by users whome I'll never meet or know.
+
+More headbanging, and not the good kind.
+
+So we can't use loopring sdk's/modules. Fanfuckingtastic. Ok, what can we do... well, we can watch how the gamestop wallet does it...
+
+After some poking around with the new gs wallet, it looks like they do have an embed loopring sdk of sorts included. BUt it SEEMS at the end of the day they are [just manully interfacing](https://docs.loopring.io/en/dex_apis/submitNftTransfer.html) with the sdk. So I guess they're just poling for each bit of info (like GetApiKey, Query NFT, etc), then using the [signTypedData_v4](https://docs.metamask.io/guide/signing-data.html) to [sign the payload](https://docs.loopring.io/en/basics/signing.html) and submit via their own api svc gateway... great... how the fuck do I do that...
+
+Welp, time to start reverse enginnering the window.gamestop object. The last bit of progress I was creating a log in with GS wallet  (WOOHOO) and I've itemized about 6 or 7 JSON RPC metods being used (including v4 signing, hence my assumption above). I **think** I can build the request with this info, then pass the necessary url payload to be signed via the v4 signing method built in the gs wallet itself. The only real open quesion I have now is HOW THE FUCK DO I POSEIDON HASH SHIT in the browser?!?!
+
+And that's where I most recently raged quit.
+
+All I wanted was to create a link that let you send your nft to the address you clicked... why is this so hard?!
+
+https://c.tenor.com/zxgvSk50wXIAAAAC/see-you-tomorrow-fuck-you.gif
