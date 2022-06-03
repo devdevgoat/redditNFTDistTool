@@ -109,7 +109,7 @@ app.get('/dashboard/:postid',(req,res) => {
             // otherwise, we need to lookup in the database for that user
             // todo: lookup in db lol
         }
-        if(typeof data[0] =='undefined'){
+        if(Object.keys(data).length == 0){
             data.error = 'No Comments with addresses found. Reload the page to check again.'
         }
         res.render('dashboard',{data});
