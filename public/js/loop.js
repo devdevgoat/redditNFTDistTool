@@ -1,4 +1,3 @@
-
 let sdk = window.Bundle;
 
 class LoopringAPIClass{
@@ -42,6 +41,8 @@ class LoopringAccount {
   }
 }
 
+
+
 async function signatureKeyPairMock(LOOPRING_EXPORTED_ACCOUNT, LoopringAPI) {
   console.log(LOOPRING_EXPORTED_ACCOUNT.account);
   let keyseed = ''
@@ -54,7 +55,7 @@ async function signatureKeyPairMock(LOOPRING_EXPORTED_ACCOUNT, LoopringAPI) {
       ).replace("${nonce}", (LOOPRING_EXPORTED_ACCOUNT.account.accInfo.nonce - 1).toString())
   }
   const parms = {
-    web3: new Web3(window.gamestop),
+    web3: window.web3,
     address: LOOPRING_EXPORTED_ACCOUNT.address,
     keySeed:keyseed,
     walletType: LoopringAPI.ConnectorNames.MetaMask,
@@ -76,27 +77,28 @@ async function setupWeb3User(address) {
     LOOPRING_EXPORTED_ACCOUNT.account = await LoopringAPI.exchangeAPI.getAccount({
         owner: LOOPRING_EXPORTED_ACCOUNT.address,
       });
+    LOOPRING_EXPORTED_ACCOUNT.accountId = LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId;
     console.log('Got account:',LOOPRING_EXPORTED_ACCOUNT.account);
-    const eddsaKey = await signatureKeyPairMock(LOOPRING_EXPORTED_ACCOUNT, LoopringAPI,window.web3);
-    console.log("eddsaKey:", eddsaKey);
-    console.log("Requesting api key")
+    
+    window.web3 = new Web3(window.gamestop);
+    const eddsaKey = await signatureKeyPairMock(LOOPRING_EXPORTED_ACCOUNT, LoopringAPI);
+    LOOPRING_EXPORTED_ACCOUNT.eddsaKey = eddsaKey;
     LOOPRING_EXPORTED_ACCOUNT.apiKeyData = await LoopringAPI.userAPI.getUserApiKey({
       accountId: LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId}, eddsaKey.sk
     );
     window.LOOPRING_EXPORTED_ACCOUNT = LOOPRING_EXPORTED_ACCOUNT;
     window.LoopringAPI = LoopringAPI;
     console.log('connected!');
+    getNFTs();
     return true;
 }
 
 async function getStorageId(nftTokenId){
   let request = {
     accountId:  window.LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId,
-    sellTokenId: nftTokenId ?? document.getElementById("nftId").value,
+    sellTokenId: nftTokenId ?? window.SELECTED_NFT.tokenId,
   };
   let apiKey = window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey;
-  console.log(request);
-  console.log(apiKey);
   const storageId = await window.LoopringAPI.userAPI.getNextStorageId(request, apiKey);
   return storageId;
 }
@@ -111,7 +113,43 @@ async function getGasFee(){
 
   const fee = await  window.LoopringAPI.userAPI.getNFTOffchainFeeAmt(request,apiKey);
   console.log("fee:", fee);
-  return fee;
+  return fee.fees;
+}
+
+async function sendSelectedNftToUser(w){
+  let GAS = await getGasFee();
+  let storageId = await getStorageId();
+  let LOOPRING_EXPORTED_ACCOUNT = window.LOOPRING_EXPORTED_ACCOUNT;
+  let apiKey = LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey;
+  let web3 = window.web3;
+  let request = {
+    request: {
+      exchange: LOOPRING_EXPORTED_ACCOUNT.exchangeAPI.exchangeInfo.exchangeAddress,
+      fromAccountId: LOOPRING_EXPORTED_ACCOUNT.accountId,
+      fromAddress: LOOPRING_EXPORTED_ACCOUNT.address,
+      toAccountId: 0, // toAccountId is not required, input 0 as default
+      toAddress: w,
+      token: {
+        tokenId: parseInt(window.SELECTED_NFT.tokenId),
+        nftData: window.SELECTED_NFT.nftData,
+        amount: "1",
+      },
+      maxFee: {
+        tokenId: GAS["ETH"].tokenId,
+        amount: GAS["ETH"].fee ?? "9400000000000000000",
+      },
+      storageId: storageId.offchainId,
+      validUntil: LOOPRING_EXPORTED_ACCOUNT.validUntil,
+    },
+    web3,
+    chainId: window.LoopringAPI.__chainId__,
+    walletType: window.LoopringAPI.ConnectorNames.Unknown,
+    eddsaKey: LOOPRING_EXPORTED_ACCOUNT.eddsaKey.sk,
+    apiKey,
+  }
+  console.log(request);
+  const transferResult = await LoopringAPI.userAPI.submitNFTInTransfer(request);
+  console.log("transfer Result:", transferResult);
 }
 
 async function getNFTs(){
@@ -122,6 +160,72 @@ async function getNFTs(){
 
   const nftsData = await  window.LoopringAPI.userAPI.getUserNFTBalances(request,apiKey);
   console.log("nftsData:", nftsData);
+
+  // nftsData = {
+  //   raw_data:{},
+  //   totalNum: 4,
+  //   userNFTBalances: [
+  //     {accountId: 104048,
+  //     deploymentStatus: "DEPLOYED",
+  //     id: 295106,
+  //     isCounterFactualNFT: true,
+  //     locked: "0",
+  //     nftData: "0x1b276fe346f468bd3d4296b7691c754f797459bc473e3d57357a10099966b605",
+  //     nftId: "0x3f6d88357a16ceda023feace19b50af597da2d75da96275c3275def348184552",
+  //     nftType: "ERC1155",
+  //     pending:{
+  //         deposit: "0",
+  //         withdraw: "0"
+  //       },
+  //     tokenAddress: "0xbd7d7e267783423590096d716b1a0d0766200d89",
+  //     tokenId: 32771,
+  //     total: "1"
+  //   }
+  //   ]
+  // }
+
+  nftsData.userNFTBalances.forEach(nft => {
+    let cid = window.LoopringAPI.nftAPI.ipfsNftIDToCid(nft.nftId);
+    console.log(cid);
+    fetch('https://loopring.mypinata.cloud/ipfs/'+cid)
+      .then(res => res.json())
+      .then(nftJson => {
+          console.log(nftJson);
+    //{
+      // description: "r/place final view of the SuperStonk subreddit submission! Credit to u/Evanlyboy for posting at https://www.reddit.com/r/place/comments/twhufb/made_an_8k_resolution_of_the_currently_last/. This token is being used to help activate Layer 2 wallets for new users the GameStop beta NFT marketplace. It likely will not show up in the users profile, but should establish their wallet on Loopring."
+      // image: "ipfs://QmUNh56816AMchWSZpBX2HdUUfa7FUVR7S6pzVvPtH9w3N"
+      // name: "r/Superstonk meets r/Place"
+      // royalty_percentage: 10
+    //}
+    // https://infura-ipfs.io/ipfs/QmReGwgLd85ps6fXw7sZgQw9w8VH6T1SxZ5KQDwjcYMNWf
+          var image = new Image(200);
+          image.src = 'https://infura-ipfs.io/ipfs/'+nftJson.image.replace('ipfs://','');
+          image.id=nft.id;
+          var el = document.getElementById('nfts').appendChild(image);
+          el.classList.add('nft')
+          el.textContent = 'x'+nft.total;
+          el.setAttribute('nftData',nft.nftData)
+          el.setAttribute('tokenId',nft.tokenId)
+          el.addEventListener('click',e =>{
+            console.log("clicked ",e.target.id);
+            var clickedEl = document.getElementById(e.target.id)
+            window.SELECTED_NFT = {
+              nftId:clickedEl.getAttribute('id'),
+              tokenId:clickedEl.getAttribute('tokenId'),
+              nftData:clickedEl.getAttribute('nftData'),
+            };
+            let nftElements = document.getElementsByClassName("nft");
+            for (let nftEl = 0; nftEl < nftElements.length; nftEl++) {
+              nftElements[nftEl].style.border="none"; 
+            }
+            document.getElementById(e.target.id).style.border="5px solid #0000FF";
+          });
+      })
+    .catch(err => {throw err});
+  });
+
   return nftsData;
 }
+
+
 

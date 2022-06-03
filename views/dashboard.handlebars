@@ -1,7 +1,10 @@
 <button type="button" class="btn btn-warning" id="gameStopWallet" onclick="gameStop();">Connect Gamestop Wallet</button>
 
-<ul class="people_list">
+<div id="nfts"></div>
+
+{{!-- <ul class="people_list"> --}}
   {{#each data}}
-    <li>{{@key}}:{{this}}</li>
+    {{!-- <li>{{@key}}:{{this}}</li> --}}
+    <a href=# onclick="sendSelectedNftToUser('{{this}}');" >{{@key}}</a><br>
   {{/each}}
-</ul>
+{{!-- </ul> --}}
