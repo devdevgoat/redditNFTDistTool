@@ -3,6 +3,7 @@
     "node": "16.x"
   },
   "dependencies": {
+    "@ensdomains/ensjs": "^2.1.0",
     "@loopring-web/loopring-sdk": "^2.0.12",
     "@walletconnect/node": "^1.0.0",
     "@walletconnect/qrcode-modal": "^1.7.7",
