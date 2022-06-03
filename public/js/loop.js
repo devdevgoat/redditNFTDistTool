@@ -1,4 +1,3 @@
-// import { Web3 } from "./web3.min";
 
 let sdk = window.Bundle;
 
@@ -65,7 +64,7 @@ async function signatureKeyPairMock(LOOPRING_EXPORTED_ACCOUNT, LoopringAPI) {
   const eddsaKey = await LoopringAPI.generateKeyPair(parms); // can use gamestop.request({ method: 'personal_sign',params:["test","0xe5B6B887570Ae0EC87B379e1576C4fe0b892BA38",""] }) here I think
   //const sig = await window.gamestop.request({ method: 'personal_sign', params:[parms.keySeed,parms.address,""] });
   //const eddsaKey = await LoopringAPI.generateKeyPair2(sig);
-  return eddsaKey;          
+  return eddsaKey;
 }
 
 async function setupWeb3User(address) {
@@ -77,12 +76,52 @@ async function setupWeb3User(address) {
     LOOPRING_EXPORTED_ACCOUNT.account = await LoopringAPI.exchangeAPI.getAccount({
         owner: LOOPRING_EXPORTED_ACCOUNT.address,
       });
-    
+    console.log('Got account:',LOOPRING_EXPORTED_ACCOUNT.account);
     const eddsaKey = await signatureKeyPairMock(LOOPRING_EXPORTED_ACCOUNT, LoopringAPI,window.web3);
     console.log("eddsaKey:", eddsaKey);
     console.log("Requesting api key")
-    LOOPRING_EXPORTED_ACCOUNT.apiKey = await LoopringAPI.userAPI.getUserApiKey({
+    LOOPRING_EXPORTED_ACCOUNT.apiKeyData = await LoopringAPI.userAPI.getUserApiKey({
       accountId: LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId}, eddsaKey.sk
     );
-    return await LOOPRING_EXPORTED_ACCOUNT;
+    window.LOOPRING_EXPORTED_ACCOUNT = LOOPRING_EXPORTED_ACCOUNT;
+    window.LoopringAPI = LoopringAPI;
+    console.log('connected!');
+    return true;
 }
+
+async function getStorageId(nftTokenId){
+  let request = {
+    accountId:  window.LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId,
+    sellTokenId: nftTokenId ?? document.getElementById("nftId").value,
+  };
+  let apiKey = window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey;
+  console.log(request);
+  console.log(apiKey);
+  const storageId = await window.LoopringAPI.userAPI.getNextStorageId(request, apiKey);
+  return storageId;
+}
+
+async function getGasFee(){
+  let request = {
+    accountId:  window.LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId,
+    requestType: window.Bundle.OffchainNFTFeeReqType.NFT_TRANSFER,
+    amount: "0",
+  };
+  let apiKey = window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey;
+
+  const fee = await  window.LoopringAPI.userAPI.getNFTOffchainFeeAmt(request,apiKey);
+  console.log("fee:", fee);
+  return fee;
+}
+
+async function getNFTs(){
+  let request = {
+    accountId:  window.LOOPRING_EXPORTED_ACCOUNT.account.accInfo.accountId
+  };
+  let apiKey = window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey;
+
+  const nftsData = await  window.LoopringAPI.userAPI.getUserNFTBalances(request,apiKey);
+  console.log("nftsData:", nftsData);
+  return nftsData;
+}
+

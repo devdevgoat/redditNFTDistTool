@@ -33,10 +33,14 @@ app.use('/js', express.static(__dirname + '/public/js'));
 let sessionUsers = {}
 
 /* ROUTES */
-app.get('/', (req, res) => {
+app.get('/old', (req, res) => {
     let random = makeid(10);
     sessionUsers[random]="pending";
     res.render('connectWallet',{sessionId:random});
+});
+
+app.get('/', (req, res) => {
+    res.render('home',{});
 });
 
 app.get('/connected', (req, res) => {
