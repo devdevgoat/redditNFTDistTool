@@ -54,6 +54,34 @@ async function promptRedditLogin(account) {
     window.location.href = "/connected?sessionId="+sessionId+"&wallet="+account;
 }
 
+function loadDashboard(){
+    let url = document.getElementById("url").value;
+    let parts = url.split('/');
+    let submission_id = -1;
+    if (!parts.includes("comments") && !parts.includes("gallery")){
+        submission_id = parts[-1];
+        if( parts.includes('r')){
+            submission_id = -1;
+        }
+    } else if (parts.includes('gallery')) {
+        submission_id = parts[parts.indexOf('gallery')+1]
+    } else if (parts[parts.length-1]=='comments' ) {
+        submission_id -1;
+    } else {
+        submission_id = parts[parts.indexOf('comments')+1]
+    }
+    let invalid = ['','undefined',-1];
+
+    if (submission_id == '' || typeof submission_id == 'undefined') submission_id = -1;
+
+    if (submission_id != -1){
+        window.location.href = '/dashboard/'+submission_id
+    } else {
+        alert("Invalid Reddit link.")
+    }
+    
+}
+
 window.onload = function () {
     // global sdk = window.Bundle;
     // Subscribe to accounts change
@@ -71,5 +99,7 @@ window.onload = function () {
         console.log(code, reason);
     });
 }
+
+
 
 

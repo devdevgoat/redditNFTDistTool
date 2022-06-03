@@ -109,12 +109,16 @@ app.get('/dashboard/:postid',(req,res) => {
             // otherwise, we need to lookup in the database for that user
             // todo: lookup in db lol
         }
-        console.log(data);
-        data.string = JSON.stringify(data)
+        if(typeof data[0] =='undefined'){
+            data.error = 'No Comments with addresses found. Reload the page to check again.'
+        }
         res.render('dashboard',{data});
     })
-
 });
+
+app.get('/dashboard/',(req,res) => {
+        res.render('dashboard',{});
+    });
 
 /* USER AUTHENTICATION WITH REDDIT */
 
