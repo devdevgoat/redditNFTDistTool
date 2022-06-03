@@ -40,7 +40,7 @@ app.get('/old', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.render('home',{});
+    res.render('dashboard',{});
 });
 
 app.get('/connected', (req, res) => {
