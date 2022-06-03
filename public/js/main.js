@@ -1,5 +1,5 @@
 //An infura ID, or custom ETH node is required for Ethereum, for Binance Smart Chain you can just use their public endpoint
-var provider = new WalletConnectProvider.default({ 
+var provider = new WalletConnectProvider.default({
         infuraId: "6d94ed08a5594416826a55072fb6e93f",
         qrcodeModalOptions: {
             mobileLinks: [
@@ -12,14 +12,14 @@ var provider = new WalletConnectProvider.default({
             ],
           },
     });
-  
+
 
 async function showQr() {
     //present the Wallet Connect QR code
-    provider.enable().then(function(res){ 
+    provider.enable().then(function(res){
         //get wallet addrs and then wrap this into the Web3 JS
         let web3 = new Web3(provider);
-        
+
         //  Get Accounts
         web3.eth.getAccounts().then(accounts => {
             promptRedditLogin(accounts[0]);
@@ -39,14 +39,15 @@ async function metaMask(){
 
 async function gameStop(){
     if( typeof gamestop !== 'undefined'){
-        let acct = await gamestop.request({ method: 'eth_requestAccounts' });
-        window.loopringAcct = await setupWeb3User(acct[0]);
-        console.log(window.loopringAcct);
+       await gamestop.enable();
+        // let acct = await gamestop.request({ method: 'eth_requestAccounts' });
+       console.log(gamestop.currentAddress);
+       await setupWeb3User(gamestop.currentAddress);
     } else {
         alert('You need to install the gamestop wallet via the chrome web store.');
     }
 }
-    
+
 async function promptRedditLogin(account) {
     console.log("Found account ",account);
     let sessionId = $('#session').val()
@@ -59,12 +60,12 @@ window.onload = function () {
     provider.on("accountsChanged", (accounts) => {
         console.log(accounts);
     });
-    
+
     // Subscribe to chainId change
     provider.on("chainChanged", (chainId) => {
         console.log(chainId);
     });
-    
+
     // Subscribe to session disconnection
     provider.on("disconnect", (code, reason) => {
         console.log(code, reason);
