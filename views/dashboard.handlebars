@@ -1,10 +1,16 @@
-<button type="button" class="btn btn-warning" id="gameStopWallet" onclick="gameStop();">Connect Gamestop Wallet</button>
 
-<div id="nfts"></div>
+{{#if data}}
+  {{#if data.error}}
+    <script>alert('{{data.error}}');</script>
+  {{/if}}
+    <button type="button" class="btn btn-warning" id="gameStopWallet" onclick="gameStop();">Connect Gamestop Wallet</button>
+    <div id="nfts"></div>
+      {{#each data}}
+        <a href=# onclick="sendSelectedNftToUser('{{this}}');" >{{@key}}</a><br>
+      {{/each}}  
+{{else}}
+    <p>Paste your reddit link below with wallet addresses in comments</p>
+    <input id="url" type="text">
+    <button type="button" class="btn btn-warning" id="gameStopWallet" onclick="loadDashboard();">Load Dashboard</button>
 
-{{!-- <ul class="people_list"> --}}
-  {{#each data}}
-    {{!-- <li>{{@key}}:{{this}}</li> --}}
-    <a href=# onclick="sendSelectedNftToUser('{{this}}');" >{{@key}}</a><br>
-  {{/each}}
-{{!-- </ul> --}}
+{{/if}}
