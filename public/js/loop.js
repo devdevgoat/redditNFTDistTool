@@ -13,6 +13,7 @@ class LoopringAPIClass{
     this.delegate = new sdk.DelegateAPI({ chainId });
     //this.generateKeyPair = sdk.generateKeyPair();
     this.ConnectorNames = sdk.ConnectorNames;
+    this.UserNFTTxTypes = sdk.UserNFTTxTypes;
     this.__chainId__ = chainId;
     this.contractAPI = sdk.ContractAPI;
     this.KEY_MESSAGE = sdk.KEY_MESSAGE;
@@ -113,10 +114,19 @@ async function getGasFee(){
 
   const fee = await  window.LoopringAPI.userAPI.getNFTOffchainFeeAmt(request,apiKey);
   console.log("fee:", fee);
+  document.getElementById("gas").textContent='Current Gas In Ether: ' + Web3.utils.fromWei(fee.fees['ETH'].fee,'ether')
   return fee.fees;
 }
 
 async function sendSelectedNftToUser(w){
+  if (typeof window.LOOPRING_EXPORTED_ACCOUNT === 'undefined') {
+    alert("Connect your wallet first!");
+    return;
+  }
+  if (typeof window.SELECTED_NFT === 'undefined') {
+    alert("Select an NFT First");
+    return;
+  }
   let GAS = await getGasFee();
   let storageId = await getStorageId();
   let LOOPRING_EXPORTED_ACCOUNT = window.LOOPRING_EXPORTED_ACCOUNT;
@@ -150,6 +160,58 @@ async function sendSelectedNftToUser(w){
   console.log(request);
   const transferResult = await LoopringAPI.userAPI.submitNFTInTransfer(request);
   console.log("transfer Result:", transferResult);
+  
+  getNFTHistory();
+}
+
+async function getNFTHistory(){
+  const result = await window.LoopringAPI.userAPI.getUserNFTTransactionHistory(
+    {
+      accountId: window.LOOPRING_EXPORTED_ACCOUNT.accountId,
+      types: [
+        LoopringAPI.UserNFTTxTypes.TRANSFER,
+      ],
+      limit: 1000,
+    },
+    window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey
+  );
+  console.log("getUserNFTTransactionHistory:", result);
+  result.userNFTTxs.forEach(trx => {
+    let nftDataSent = trx.nftData
+    let tag = buildNFTag(nftDataSent)
+    if (tag) {
+      let user = trx.receiverAddress
+      updateNftSentFeildForUserWithTag(user,nftDataSent,tag)
+    }
+  });
+  return ;
+}
+
+function buildNFTag(nftData){
+  var nftImg = document.querySelector("img[nftData='"+nftData+"']")
+  console.log(nftImg,nftData)
+  if (nftImg){
+      var tag = new Image()
+      tag.style='max-width:100px;border:1px black solid;'
+      tag.src = nftImg.getAttribute('src')
+      tag.id = nftData
+      return tag
+  }
+  return false;
+}
+
+function updateNftSentFeildForUserWithTag(user,nftData,tag){
+  var cell = document.getElementById('sent-'+user)
+  if (cell){
+    console.log('Oooh youve already sent '+nftData+' to '+ user)
+    if (cell.querySelector('img[id="'+nftData+'"]')) {
+      console.log('Already added to table. skipping')
+      return
+    } else {
+      cell.appendChild(tag);
+    }
+  }
+  
 }
 
 async function getNFTs(){
@@ -186,27 +248,36 @@ async function getNFTs(){
 
   nftsData.userNFTBalances.forEach(nft => {
     let cid = window.LoopringAPI.nftAPI.ipfsNftIDToCid(nft.nftId);
-    console.log(cid);
     fetch('https://loopring.mypinata.cloud/ipfs/'+cid)
       .then(res => res.json())
       .then(nftJson => {
-          console.log(nftJson);
-    //{
-      // description: "r/place final view of the SuperStonk subreddit submission! Credit to u/Evanlyboy for posting at https://www.reddit.com/r/place/comments/twhufb/made_an_8k_resolution_of_the_currently_last/. This token is being used to help activate Layer 2 wallets for new users the GameStop beta NFT marketplace. It likely will not show up in the users profile, but should establish their wallet on Loopring."
-      // image: "ipfs://QmUNh56816AMchWSZpBX2HdUUfa7FUVR7S6pzVvPtH9w3N"
-      // name: "r/Superstonk meets r/Place"
-      // royalty_percentage: 10
-    //}
-    // https://infura-ipfs.io/ipfs/QmReGwgLd85ps6fXw7sZgQw9w8VH6T1SxZ5KQDwjcYMNWf
+          // console.log(nftJson);
+          //{ // data looks like:
+            // description: "r/place final view of the SuperStonk subreddit submission! Credit to u/Evanlyboy for posting at https://www.reddit.com/r/place/comments/twhufb/made_an_8k_resolution_of_the_currently_last/. This token is being used to help activate Layer 2 wallets for new users the GameStop beta NFT marketplace. It likely will not show up in the users profile, but should establish their wallet on Loopring."
+            // image: "ipfs://QmUNh56816AMchWSZpBX2HdUUfa7FUVR7S6pzVvPtH9w3N"
+            // name: "r/Superstonk meets r/Place"
+            // royalty_percentage: 10
+          //}
+          // https://infura-ipfs.io/ipfs/QmReGwgLd85ps6fXw7sZgQw9w8VH6T1SxZ5KQDwjcYMNWf
+          var nftSection = document.getElementById('nfts')
+          var nftSlot = document.createElement('div')
           var image = new Image(200);
+          var p = document.createElement('p')
+          // buid tree
+          nftSection.appendChild(nftSlot)
+          nftSlot.appendChild(p)
+          nftSlot.appendChild(image);
           image.src = 'https://infura-ipfs.io/ipfs/'+nftJson.image.replace('ipfs://','');
           image.id=nft.id;
-          var el = document.getElementById('nfts').appendChild(image);
-          el.classList.add('nft')
-          el.textContent = 'x'+nft.total;
-          el.setAttribute('nftData',nft.nftData)
-          el.setAttribute('tokenId',nft.tokenId)
-          el.addEventListener('click',e =>{
+          //set attributes
+          nftSlot.setAttribute('class','one-nft')
+          image.classList.add('nft')
+          image.setAttribute('nftData',nft.nftData)
+          image.setAttribute('tokenId',nft.tokenId)
+          p.setAttribute('class','badge alert-danger')
+          p.textContent = 'x'+nft.total
+          //creat listener
+          image.addEventListener('click',e =>{
             console.log("clicked ",e.target.id);
             var clickedEl = document.getElementById(e.target.id)
             window.SELECTED_NFT = {
@@ -219,12 +290,21 @@ async function getNFTs(){
               nftElements[nftEl].style.border="none"; 
             }
             document.getElementById(e.target.id).style.border="5px solid #0000FF";
+            hideNftsSentAlready();
           });
       })
     .catch(err => {throw err});
   });
 
   return nftsData;
+}
+
+async function hideNftsSentAlready() {
+  // let table = document.getElementById('users')
+  // //show all first
+  
+  // let cell = table.querySelector('img[id="'+nftData+'"]')
+  // let row = cell.
 }
 
 

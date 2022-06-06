@@ -1,14 +1,31 @@
 <h1>NFT Distributor</h1>
-
+    <span id="gas"></span>
 {{#if data}}
   {{#if data.error}}
     <script>alert('{{data.error}}');</script>
   {{/if}}
     <button type="button" class="btn btn-warning" id="gameStopWallet" onclick="gameStop();">Connect Gamestop Wallet</button>
     <div id="nfts"></div>
+    <div id="users">
+        <table class="tg">
+        <thead>
+          <tr>
+            <td>User</td>
+            <td>NFT's Sent</td>
+            <td>Send Selected NFT</td>
+          </tr>
+        </thead>
+          
       {{#each data}}
-        <a href=# onclick="sendSelectedNftToUser('{{this}}');" >{{@key}}</a><br>
-      {{/each}}  
+        <tr>
+            <td>{{@key}}<br></td>
+            <td id="sent-{{this}}"></td>
+            <td><button type="button" class="btn btn-danger" id="gameStopWallet" onclick="sendSelectedNftToUser('{{this}}');">Send Selected NFT</button></td>
+          </tr>
+      {{/each}} 
+      
+        </table>
+    </div>
 {{else}}
     <p>Paste your reddit link below with wallet addresses in comments</p>
     <input id="url" type="text">

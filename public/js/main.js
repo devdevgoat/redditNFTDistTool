@@ -43,6 +43,9 @@ async function gameStop(){
         // let acct = await gamestop.request({ method: 'eth_requestAccounts' });
        console.log(gamestop.currentAddress);
        await setupWeb3User(gamestop.currentAddress);
+       getGasFee();
+       getNFTHistory();
+       document.getElementById('gameStopWallet').remove();
     } else {
         alert('You need to install the gamestop wallet via the chrome web store.');
     }
