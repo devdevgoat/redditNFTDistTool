@@ -267,9 +267,14 @@ async function getNFTs(){
           nftSection.appendChild(nftSlot)
           nftSlot.appendChild(p)
           nftSlot.appendChild(image);
-          image.src = 'https://infura-ipfs.io/ipfs/'+nftJson.image.replace('ipfs://','');
-          image.id=nft.id;
+          
           //set attributes
+          if (nftJson.image.startsWith('ipfs://')) {
+            image.src = 'https://infura-ipfs.io/ipfs/'+nftJson.image.replace('ipfs://','');
+          } else {
+            image.src = nftJson.image;
+          }
+          image.id=nft.id;
           nftSlot.setAttribute('class','one-nft')
           image.classList.add('nft')
           image.setAttribute('nftData',nft.nftData)
