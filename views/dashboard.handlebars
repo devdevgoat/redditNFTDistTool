@@ -1,3 +1,14 @@
+<script>
+  //get the reddit addresses
+  
+
+
+window.onload = () => {
+  window.redditData = {{{ data }}};
+}
+</script>
+
+
 <h1>NFT Distributor</h1>
     <span id="gas"></span>
 {{#if data}}
@@ -7,22 +18,9 @@
     <button type="button" class="btn btn-warning" id="gameStopWallet" onclick="gameStop();">Connect Gamestop Wallet</button>
     <div id="nfts"></div>
     <div id="users">
-        <table class="tg">
-        <thead>
-          <tr>
-            <td>User</td>
-            <td>NFT's Sent</td>
-            <td>Send Selected NFT</td>
-          </tr>
-        </thead>
+        <table class="tg" id="userTable">
+        
           
-      {{#each data}}
-        <tr>
-            <td>{{@key}}<br></td>
-            <td id="sent-{{this}}"></td>
-            <td><button type="button" class="btn btn-danger" id="gameStopWallet" onclick="sendSelectedNftToUser('{{this}}');">Send Selected NFT</button></td>
-          </tr>
-      {{/each}} 
       
         </table>
     </div>

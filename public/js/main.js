@@ -46,6 +46,7 @@ async function gameStop(){
        getGasFee();
        getNFTHistory();
        document.getElementById('gameStopWallet').remove();
+       createNftTable();
     } else {
         alert('You need to install the gamestop wallet via the chrome web store.');
     }
@@ -84,6 +85,60 @@ function loadDashboard(){
     }
     
 }
+
+async function sendToEnsOrEthAddr(addr){
+    if (addr.startsWith('0x')) {
+        console.log("Sending to ",addr)
+        sendSelectedNftToUser(addr);
+    } 
+    else if(addr.endsWith('.eth')) {
+        LoopringAPI.walletAPI.getAddressByENS({fullName: addr.toLowerCase()}).then(converted=>{
+            console.log("Sending to ",converted.address)
+            sendSelectedNftToUser(converted.address)
+        });
+    } else {
+        console.log("Invalid address ",addr)
+        return
+    }
+    
+}
+  
+ async function createNftTable(){
+    if (!window.redditData)  {
+      alert('No data received.. bad link?');
+      return
+    }
+    if(!window.gamestop){
+      alert('Connect reddit wallet first')
+    }
+    let table = document.getElementById('userTable');
+    let r = table.insertRow(0)
+    r.insertCell(0).textContent = 'Reddit User'
+    r.insertCell(1).textContent = 'NFT\'s Already Owned'
+    r.insertCell(2).textContent = 'Action'
+    $.each(window.redditData, function(user, addresses) {
+        buildTableRow(user,addresses);
+    });
+  }
+  
+  
+  async function buildTableRow(user,addressArray){
+    // console.log(addressArray);
+    let table = document.getElementById('userTable');
+    addressArray.forEach(addr => {
+        // console.log(user,addr)
+        let r = table.insertRow(-1)
+        let userCell = r.insertCell(0)
+        let nftListCell = r.insertCell(1)
+        let sendButtonCell = r.insertCell(2)
+  
+        userCell.textContent = user
+        nftListCell.setAttribute('id','sent-'+addr)
+        sendButtonCell.innerHTML = `<button type="button" class="btn btn-danger" id="gameStopWallet" onclick="sendToEnsOrEthAddr('${addr}');">Send Selected NFT</button>`     
+    });
+    
+  }
+
 
 window.onload = function () {
     // global sdk = window.Bundle;

@@ -91,24 +91,34 @@ app.get('lookupUserId',(req,res)=>{
 
 /* Dashboard */
 
+function isAddress(txt) {
+    if(txt.startsWith('0x') || txt.endsWith('.eth')){
+        return true
+    } else {
+        return false
+    }
+}
+
 app.get('/dashboard/:postid',(req,res) => {
     var postId = req.params.postid; //4j8p6d
-    var ethRegEx = /0x[a-fA-F0-9]{40}/; // adding |([a-z0-9]+\.)*[a-z0-9]+\.eth+ will enable ens name lookup, but can't figure out resolution yet.
+    var ethRegEx = /0x[a-fA-F0-9]{40}|[^\s]*\.eth/; // adding |([a-z0-9]+\.)*[a-z0-9]+\.eth+ will enable ens name lookup, but can't figure out resolution yet.
     var data = {}
-    r.getSubmission(postId).expandReplies({limit: 125, depth: 1}).then(p=>{
+    r.getSubmission(postId).expandReplies({limit: Infinity, depth: 1}).then(p=>{
         // should make sure only the OP can load this page
-        console.log(p.author.name); // could have the user login, then check this
+        // console.log(p.author.name); // could have the user login, then check this
         for ( var c = 0; c < p.comments.length; c++ ){
-            let address = p.comments[c].body.match(ethRegEx);
-            // if (address.match(/([a-z0-9]+\.)*[a-z0-9]+\.eth+/)){
-            //     console.log("Found ens name. Translates to:")
-            //     console.log(ens.name(address).getAddress())
-            // }
+
+            let addresses = p.comments[c].body.match(ethRegEx)
+            
             let user = p.comments[c].author.name;
             // since we're loading the comments anyway, we can just scrape for eth addresses
-            if (address){
+            if (addresses){
                 // console.log(user + ":" +address);
-                data[user]=address[0];
+                if(data[user]){
+                    data[user].concat(addresses); //
+                } else {
+                    data[user] = addresses;
+                }
             }
             // otherwise, we need to lookup in the database for that user
             // todo: lookup in db lol
@@ -116,7 +126,7 @@ app.get('/dashboard/:postid',(req,res) => {
         if(Object.keys(data).length == 0){
             data.error = 'No Comments with addresses found. Reload the page to check again.'
         }
-        res.render('dashboard',{data});
+        res.render('dashboard',{data:JSON.stringify(data)});
     })
 });
 

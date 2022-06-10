@@ -176,20 +176,36 @@ async function getNFTHistory(){
     window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey
   );
   console.log("getUserNFTTransactionHistory:", result);
-  result.userNFTTxs.forEach(trx => {
+  // result.userNFTTxs.forEach(trx => {
+  for (trx of result.userNFTTxs) {
     let nftDataSent = trx.nftData
     let tag = buildNFTag(nftDataSent)
     if (tag) {
       let user = trx.receiverAddress
+      await new Promise(r => setTimeout(r, 500))
+
       updateNftSentFeildForUserWithTag(user,nftDataSent,tag)
     }
-  });
+  }
   return ;
+}
+
+async function getAllNftOwners(nftData) {
+  headers = {
+    "X-API-KEY": window.LOOPRING_EXPORTED_ACCOUNT.apiKeyData.apiKey,
+    "Content-Type": "application/json"
+  }
+  let url = `https://api3.loopring.io/api/v3/nft/info/nftHolders\?nftData\=${nftData}\&offset\=0\&limit\=100`
+  let res = await fetch(url, {headers: headers})
+  let holders = await res.json();
+  holders.nftHolders.forEach(hodler => {
+    
+  });
 }
 
 function buildNFTag(nftData){
   var nftImg = document.querySelector("img[nftData='"+nftData+"']")
-  console.log(nftImg,nftData)
+  // console.log(nftImg,nftData)
   if (nftImg){
       var tag = new Image()
       tag.style='max-width:100px;border:1px black solid;'
@@ -200,7 +216,14 @@ function buildNFTag(nftData){
   return false;
 }
 
-function updateNftSentFeildForUserWithTag(user,nftData,tag){
+async function hasEns(addr) {
+  let ens = await LoopringAPI.walletAPI.getEnsByAddress({owner:addr})
+  return ens.ensName
+}
+
+async function updateNftSentFeildForUserWithTag(user,nftData,tag){
+  let ens = await hasEns(user);
+  if (ens) user = ens;
   var cell = document.getElementById('sent-'+user)
   if (cell){
     console.log('Oooh youve already sent '+nftData+' to '+ user)
@@ -297,8 +320,13 @@ async function getNFTs(){
             document.getElementById(e.target.id).style.border="5px solid #0000FF";
             hideNftsSentAlready();
           });
-      })
+          
+         
+      
+        })
     .catch(err => {throw err});
+        
+    // getAllNftOwners(nft.nftData);
   });
 
   return nftsData;
