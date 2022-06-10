@@ -133,6 +133,11 @@ async function sendToEnsOrEthAddr(addr){
     // console.log(addressArray);
     let table = document.getElementById('userTable');
     addressArray.forEach(addr => {
+        let useAddr = addr
+        if (addr.endsWith('.eth')){
+            useAddr = addr.toLowerCase()
+            // console.log(useAddr)
+        }
         // console.log(user,addr)
         let r = table.insertRow(-1)
         let userCell = r.insertCell(0)
@@ -140,8 +145,8 @@ async function sendToEnsOrEthAddr(addr){
         let sendButtonCell = r.insertCell(2)
   
         userCell.textContent = user
-        nftListCell.setAttribute('id','sent-'+addr)
-        sendButtonCell.innerHTML = `<button type="button" class="btn ${btnType(addr)}" id="gameStopWallet" onclick="sendToEnsOrEthAddr('${addr}');">Send Selected NFT</button>`     
+        nftListCell.setAttribute('id','sent-'+useAddr)
+        sendButtonCell.innerHTML = `<button type="button" class="btn ${btnType(useAddr)}" id="gameStopWallet" onclick="sendToEnsOrEthAddr('${useAddr}');">Send Selected NFT</button>`     
     });
     
   }
