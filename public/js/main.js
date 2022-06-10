@@ -121,6 +121,13 @@ async function sendToEnsOrEthAddr(addr){
     });
   }
   
+  function btnType(add) {
+      if(add.endsWith('.eth')) {
+          return 'btn-warning'
+      } else {
+          return 'btn-danger'
+      }
+  }
   
   async function buildTableRow(user,addressArray){
     // console.log(addressArray);
@@ -134,7 +141,7 @@ async function sendToEnsOrEthAddr(addr){
   
         userCell.textContent = user
         nftListCell.setAttribute('id','sent-'+addr)
-        sendButtonCell.innerHTML = `<button type="button" class="btn btn-danger" id="gameStopWallet" onclick="sendToEnsOrEthAddr('${addr}');">Send Selected NFT</button>`     
+        sendButtonCell.innerHTML = `<button type="button" class="btn ${btnType(addr)}" id="gameStopWallet" onclick="sendToEnsOrEthAddr('${addr}');">Send Selected NFT</button>`     
     });
     
   }
